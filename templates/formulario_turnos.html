@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Asignación de Turnos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light py-4">
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Asignar Turnos de Trabajo</h2>
+        <a href="/logout" class="btn btn-outline-secondary">Cerrar sesión</a>
+    </div>
+
+    <form id="turnoForm" method="POST" action="/crear_turnos">
+        <div id="turnosContainer">
+            <div class="turno border rounded p-4 mb-4 bg-white shadow-sm">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha:</label>
+                        <input type="date" name="fecha[]" class="form-control" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Empleado:</label>
+                        <select name="empleado_dni[]" class="form-select" required>
+                            <option value="">Seleccione</option>
+                            <option value="Carla Martín|42241336L">Carla Martín</option>
+                            <option value="Marta Cano|79071124E">Marta Cano</option>
+                            <option value="María del Cristo Díaz|54057245T">María del Cristo Díaz</option>
+                            <option value="Espíritu Santo Tejada|30787146J">Espíritu Santo Tejada</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Centro:</label>
+                        <select name="centro[]" class="form-select" required>
+                            <option value="">Seleccione</option>
+                            <option value="ALVAREZ DE LUGO">Álvarez de Lugo</option>
+                            <option value="DUGGI">Duggi</option>
+                            <option value="INGENIEROS">Ingenieros</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Turno:</label>
+                        <select name="turno[]" class="form-select turno-select" required>
+                            <option value="">Seleccione</option>
+                            <option value="Mañana">Mañana</option>
+                            <option value="Tarde">Tarde</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Hora de entrada:</label>
+                        <input type="time" name="hora_entrada[]" class="form-control" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Hora de salida:</label>
+                        <input type="time" name="hora_salida[]" class="form-control" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Observaciones:</label>
+                        <textarea name="observaciones[]" class="form-control" rows="2" placeholder="Observaciones específicas para este turno"></textarea>
+                    </div>
+                </div>
+                <div class="text-end mt-3">
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removeTurno(this)">Eliminar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-3">
+            <button type="button" class="btn btn-secondary" onclick="addTurno()">Añadir otro turno</button>
+            <button type="submit" class="btn btn-primary">Guardar turnos</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function addTurno() {
+        const container = document.getElementById('turnosContainer');
+        const template = container.querySelector('.turno');
+        const clone = template.cloneNode(true);
+        clone.querySelectorAll('input, select, textarea').forEach(el => el.value = '');
+
+        const turnoSelect = clone.querySelector('select[name="turno[]"]');
+        turnoSelect.addEventListener('change', function () {
+            autocompletarHorario(this);
+        });
+
+        container.appendChild(clone);
+    }
+
+    function removeTurno(button) {
+        const container = document.getElementById('turnosContainer');
+        if (container.children.length > 1) {
+            button.closest('.turno').remove();
+        } else {
+            alert("Debe haber al menos un turno.");
+        }
+    }
+
+    function autocompletarHorario(selectElement) {
+        const turno = selectElement.value;
+        const turnoDiv = selectElement.closest('.turno');
+        const entrada = turnoDiv.querySelector('input[name="hora_entrada[]"]');
+        const salida = turnoDiv.querySelector('input[name="hora_salida[]"]');
+
+        if (turno === "Mañana") {
+            entrada.value = "07:00";
+            salida.value = "17:00";
+        } else if (turno === "Tarde") {
+            entrada.value = "12:00";
+            salida.value = "21:00";
+        } else {
+            entrada.value = "";
+            salida.value = "";
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const turnoSelects = document.querySelectorAll('select[name="turno[]"]');
+        turnoSelects.forEach(select => {
+            select.addEventListener('change', function () {
+                autocompletarHorario(this);
+            });
+        });
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

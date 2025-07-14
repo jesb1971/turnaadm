@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Informes</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .form-inline .form-group {
+            margin-right: 15px;
+        }
+        .btn {
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Panel de Informes</h1>
+        {% if mensaje %}
+            <div class="alert alert-info">{{ mensaje }}</div>
+        {% endif %}
+
+        <form class="form-inline mb-3" method="get" action="/panel_informes">
+            <div class="form-group">
+                <label for="fecha_inicio">Desde:</label>
+                <input type="date" class="form-control ml-2" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio or '' }}">
+            </div>
+            <div class="form-group">
+                <label for="fecha_fin" class="ml-3">Hasta:</label>
+                <input type="date" class="form-control ml-2" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin or '' }}">
+            </div>
+            <div class="form-group">
+                <label for="centro" class="ml-3">Centro:</label>
+                <select class="form-control ml-2" id="centro" name="centro">
+                    <option value="">Todos</option>
+                    <option value="Alvarez" {% if centro_filtro == 'Alvarez' %}selected{% endif %}>Alvarez de Lugo</option>
+                    <option value="Duggi" {% if centro_filtro == 'Duggi' %}selected{% endif %}>Duggi</option>
+                    <option value="Ingenieros" {% if centro_filtro == 'Ingenieros' %}selected{% endif %}>Ingenieros</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary ml-3">Filtrar</button>
+        </form>
+
+        <a href="/exportar_excel?fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}&centro={{ centro_filtro }}" class="btn btn-success mb-3">Exportar a Excel</a>
+        <a href="/panel_turnos" class="btn btn-outline-secondary mb-3">Volver al Panel</a>
+
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Empleado</th>
+                    <th>Centro</th>
+                    <th>Turno</th>
+                    <th>Hora Entrada</th>
+                    <th>Hora Salida</th>
+                    <th>Fecha</th>
+                    <th>Observaciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for turno in turnos %}
+                <tr>
+                    <td>{{ turno['empleado'] }}</td>
+                    <td>{{ turno['centro'] }}</td>
+                    <td>{{ turno['turno'] }}</td>
+                    <td>{{ turno['hora_entrada'] }}</td>
+                    <td>{{ turno['hora_salida'] }}</td>
+                    <td>{{ turno['fecha'] }}</td>
+                    <td>{{ turno['observaciones'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

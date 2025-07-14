@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mis Turnos - TURNAADM</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        header {
+            background-color: #155195;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .logout {
+            text-align: center;
+            margin: 20px;
+        }
+        .logout a {
+            color: #155195;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .logout a:hover {
+            text-decoration: underline;
+        }
+        #calendar {
+            margin-bottom: 40px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .alvarez { background-color: #EF7F1A33; }
+        .duggi { background-color: #15519533; }
+        .ingenieros { background-color: #771D8133; }
+        table {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h2>Bienvenido/a, {{ empleado }}</h2>
+</header>
+
+<div class="container mt-4">
+
+    <!-- CALENDARIO -->
+    <div id="calendar"></div>
+
+    <!-- BOTÓN EXPORTAR -->
+    <div class="mb-3 text-end">
+        <a href="{{ url_for('exportar_turnos') }}" class="btn btn-success">Exportar a Excel</a>
+    </div>
+
+    <!-- TABLA DE TURNOS -->
+    <h4 class="mb-3">Turnos detallados</h4>
+    {% if turnos %}
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Fecha</th>
+                    <th>Centro</th>
+                    <th>Turno</th>
+                    <th>Hora Entrada</th>
+                    <th>Hora Salida</th>
+                    <th>Observaciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in turnos %}
+                <tr class="{% if t['centro'] == 'ALVAREZ DE LUGO' %}alvarez{% elif t['centro'] == 'DUGGI' %}duggi{% elif t['centro'] == 'INGENIEROS' %}ingenieros{% endif %}">
+                    <td>{{ t['fecha'] }}</td>
+                    <td>{{ t['centro'] }}</td>
+                    <td>{{ t['turno'] }}</td>
+                    <td>{{ t['hora_entrada'] }}</td>
+                    <td>{{ t['hora_salida'] }}</td>
+                    <td>{{ t['observaciones'] or '' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p>No tienes turnos asignados.</p>
+    {% endif %}
+</div>
+
+<!-- CIERRE DE SESIÓN -->
+<div class="logout">
+    <a href="{{ url_for('logout_usuario') }}">Cerrar sesión</a>
+</div>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const calendarEl = document.getElementById('calendar');
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'es',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek'
+            },
+            events: [
+                {% for t in turnos %}
+                {
+                    title: "{{ t['turno'] }} - {{ t['centro'] }}",
+                    start: "{{ t['fecha'] }}",
+                    color: "{% if t['centro'] == 'ALVAREZ DE LUGO' %}#EF7F1A{% elif t['centro'] == 'DUGGI' %}#155195{% elif t['centro'] == 'INGENIEROS' %}#771D81{% else %}#888{% endif %}",
+                    description: "Entrada: {{ t['hora_entrada'] }} - Salida: {{ t['hora_salida'] }}{% if t['observaciones'] %} - {{ t['observaciones'] }}{% endif %}"
+                },
+                {% endfor %}
+            ],
+            eventDidMount: function(info) {
+                const tooltip = document.createElement('div');
+                tooltip.innerHTML = info.event.extendedProps.description;
+                tooltip.style.position = 'absolute';
+                tooltip.style.background = '#333';
+                tooltip.style.color = '#fff';
+                tooltip.style.padding = '5px';
+                tooltip.style.borderRadius = '5px';
+                tooltip.style.fontSize = '0.85em';
+                tooltip.style.zIndex = '1000';
+                tooltip.style.display = 'none';
+                document.body.appendChild(tooltip);
+
+                info.el.addEventListener('mouseover', function(e) {
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = e.pageX + 10 + 'px';
+                    tooltip.style.top = e.pageY + 10 + 'px';
+                });
+                info.el.addEventListener('mouseout', function() {
+                    tooltip.style.display = 'none';
+                });
+            }
+        });
+        calendar.render();
+    });
+</script>
+
+</body>
+</html>
