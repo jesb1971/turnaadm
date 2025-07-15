@@ -6,7 +6,7 @@ from io import BytesIO
 app = Flask(__name__)
 app.secret_key = 'turnaadm2025'
 
-# ---------------------- AUTENTICACIÓN COORDINACIÓN ----------------------
+# ---------------------- AUTENTICACIÓN COORDINACIÓN Y ADMIN ----------------------
 
 @app.route('/')
 def index():
@@ -19,7 +19,8 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        if username == 'coordinacion' and password == 'admin123':
+        if (username == 'coordinacion' and password == 'admin123') or \
+           (username == 'admin' and password == 'claveadmin'):
             session['usuario'] = username
             return redirect('/panel_turnos')
         else:
@@ -31,7 +32,7 @@ def logout():
     session.pop('usuario', None)
     return redirect(url_for('login', mensaje='Sesión cerrada correctamente.'))
 
-# ---------------------- PANEL DE COORDINACIÓN ----------------------
+# ---------------------- PANEL DE COORDINACIÓN Y ADMIN ----------------------
 
 @app.route('/panel_turnos')
 def panel_turnos():
@@ -240,7 +241,7 @@ def exportar_turnos():
 
 @app.route('/panel_informes', methods=['GET'])
 def panel_informes():
-    if 'usuario' not in session or session['usuario'] != 'coordinacion':
+    if 'usuario' not in session or session['usuario'] not in ['coordinacion', 'admin']:
         return redirect('/login')
 
     fecha_inicio = request.args.get('fecha_inicio')
@@ -280,7 +281,7 @@ def panel_informes():
 
 @app.route('/exportar_excel')
 def exportar_excel():
-    if 'usuario' not in session or session['usuario'] != 'coordinacion':
+    if 'usuario' not in session or session['usuario'] not in ['coordinacion', 'admin']:
         return redirect('/login')
 
     fecha_inicio = request.args.get('fecha_inicio')
