@@ -68,8 +68,10 @@
                     <td>{{ turno['hora_salida'] }}</td>
                     <td>{{ turno['observaciones'] }}</td>
                     <td>
-                        <a href="{{ url_for('editar_turno', id=turno['id']) }}" class="btn btn-warning btn-sm">Editar</a>
-                        <a href="{{ url_for('eliminar_turno', id=turno['id']) }}" class="btn btn-danger btn-sm">Eliminar</a>
+                        <div class="d-flex flex-column">
+                            <a href="{{ url_for('editar_turno', id=turno['id']) }}" class="btn btn-warning btn-sm mb-1">Editar</a>
+                            <a href="{{ url_for('eliminar_turno', id=turno['id']) }}" class="btn btn-danger btn-sm">Eliminar</a>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
