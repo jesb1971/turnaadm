@@ -300,49 +300,55 @@ def panel_informes():
     return render_template('panel_informes.html', turnos=turnos, fecha_inicio=fecha_inicio, fecha_fin=fecha_fin, centro_filtro=centro_filtro, mensaje=mensaje)
 
 @app.route('/exportar_excel')
+@app.route('/exportar_excel')
 def exportar_excel():
     if 'usuario' not in session or session['usuario'] not in ['coordinacion', 'admin']:
         return redirect('/login')
 
-    fecha_inicio = request.args.get('fecha_inicio')
-    fecha_fin = request.args.get('fecha_fin')
-    centro_filtro = request.args.get('centro')
+    try:
+        fecha_inicio = request.args.get('fecha_inicio')
+        fecha_fin = request.args.get('fecha_fin')
+        centro_filtro = request.args.get('centro')
 
-    conn = sqlite3.connect('turnos.db')
-    cursor = conn.cursor()
+        conn = sqlite3.connect('turnos.db')
+        cursor = conn.cursor()
 
-    query = """
-        SELECT empleado, centro, turno, hora_entrada, hora_salida, fecha, observaciones 
-        FROM turnos 
-        WHERE 1=1
-    """
-    params = []
+        query = """
+            SELECT empleado, centro, turno, hora_entrada, hora_salida, fecha, observaciones 
+            FROM turnos 
+            WHERE 1=1
+        """
+        params = []
 
-    if fecha_inicio:
-        query += " AND fecha >= ?"
-        params.append(fecha_inicio)
+        if fecha_inicio:
+            query += " AND fecha >= ?"
+            params.append(fecha_inicio)
 
-    if fecha_fin:
-        query += " AND fecha <= ?"
-        params.append(fecha_fin)
+        if fecha_fin:
+            query += " AND fecha <= ?"
+            params.append(fecha_fin)
 
-    if centro_filtro:
-        query += " AND centro LIKE ?"
-        params.append(f"%{centro_filtro}%")
+        if centro_filtro:
+            query += " AND centro LIKE ?"
+            params.append(f"%{centro_filtro}%")
 
-    query += " ORDER BY fecha DESC"
-    cursor.execute(query, params)
-    datos = cursor.fetchall()
-    conn.close()
+        query += " ORDER BY fecha DESC"
+        cursor.execute(query, params)
+        datos = cursor.fetchall()
+        conn.close()
 
-    df = pd.DataFrame(datos, columns=['Empleado', 'Centro', 'Turno', 'Hora Entrada', 'Hora Salida', 'Fecha', 'Observaciones'])
+        columnas = ['Empleado', 'Centro', 'Turno', 'Hora Entrada', 'Hora Salida', 'Fecha', 'Observaciones']
+        df = pd.DataFrame(datos, columns=columnas)
 
-    output = BytesIO()
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        df.to_excel(writer, index=False, sheet_name='Turnos')
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            df.to_excel(writer, index=False, sheet_name='Turnos')
 
-    output.seek(0)
-    return send_file(output, download_name='turnos_filtrados.xlsx', as_attachment=True)
+        output.seek(0)
+        return send_file(output, download_name='turnos_filtrados.xlsx', as_attachment=True)
+
+    except Exception as e:
+        return f"Error al exportar: {str(e)}", 500
 
 # ---------------------- INICIO ----------------------
 
