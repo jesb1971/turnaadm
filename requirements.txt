@@ -1,4 +1,9 @@
 Flask==2.2.5
-pandas==2.2.3 --only-binary :all:
-XlsxWriter
+pandas==2.2.3
 gunicorn
+XlsxWriter
+Jinja2>=3.0
+python-dateutil>=2.8.2
+pytz>=2020.1
+MarkupSafe>=2.0
+itsdangerous>=2.0
