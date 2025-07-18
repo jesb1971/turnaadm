@@ -196,18 +196,38 @@ def panel_usuario():
         return redirect('/login_usuario')
 
     dni = session['dni']
+    empleado = session['empleado']
+
     conn = sqlite3.connect('turnos.db')
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
+
+    # Turnos del usuario autenticado
     cursor.execute("""
         SELECT fecha, centro, turno, hora_entrada, hora_salida, observaciones 
         FROM turnos 
         WHERE dni = ? 
         ORDER BY fecha
     """, (dni,))
-    turnos = cursor.fetchall()
+    turnos_propios = cursor.fetchall()
+
+    # Turnos de los demás compañeros
+    cursor.execute("""
+        SELECT empleado, fecha, centro, turno, hora_entrada, hora_salida, observaciones 
+        FROM turnos 
+        WHERE dni != ? 
+        ORDER BY fecha
+    """, (dni,))
+    turnos_companeros = cursor.fetchall()
+
     conn.close()
-    return render_template('panel_usuario.html', empleado=session['empleado'], turnos=turnos)
+
+    return render_template(
+        'panel_usuario.html',
+        empleado=empleado,
+        turnos_propios=turnos_propios,
+        turnos_companeros=turnos_companeros
+    )
 
 # ---------------------- EXPORTAR TURNOS A EXCEL (USUARIO) ----------------------
 

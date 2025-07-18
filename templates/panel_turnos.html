@@ -4,13 +4,28 @@
     <meta charset="UTF-8">
     <title>Panel de Turnos</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/fixedheader/3.4.0/css/fixedHeader.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
-            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        header {
+            background-color: #155195;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+        }
+        header img {
+            height: 40px;
+            margin-right: 15px;
         }
         h1 {
-            margin-bottom: 20px;
+            margin: 0;
+            font-size: 1.6rem;
         }
         .alvarez {
             background-color: #EF7F1A !important;
@@ -24,27 +39,43 @@
             background-color: #771D81 !important;
             color: white;
         }
-        table {
-            margin-top: 20px;
+        table.dataTable tbody tr:nth-of-type(odd) {
+            background-color: #f2f2f2;
+        }
+        td, th {
+            text-align: center;
+            vertical-align: middle !important;
+        }
+        .btn-sm i {
+            margin-right: 4px;
         }
         .mensaje {
-            margin-bottom: 20px;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Panel de Turnos</h1>
 
-        {% if mensaje %}
-            <div id="mensaje" class="alert alert-success mensaje">{{ mensaje }}</div>
-        {% endif %}
+<header>
+    <img src="{{ url_for('static', filename='Logo_turnaam.jpeg') }}" alt="Logo ServiTurn">
+    <h1>Panel de Turnos</h1>
+</header>
 
-        <a href="/formulario_turnos" class="btn btn-success mb-3">+ Añadir Turno</a>
-        <a href="/panel_informes" class="btn btn-info mb-3 ml-2">Ver Informes</a>
-        <a href="/logout" class="btn btn-outline-secondary mb-3 float-right">Cerrar sesión</a>
+<div class="container mt-4">
+    {% if mensaje %}
+        <div id="mensaje" class="alert alert-success text-center">{{ mensaje }}</div>
+    {% endif %}
 
-        <table class="table table-bordered table-hover">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+        <div>
+            <a href="/formulario_turnos" class="btn btn-success mb-2"><i class="fas fa-plus"></i> Añadir Turno</a>
+            <a href="/panel_informes" class="btn btn-info mb-2 ml-2"><i class="fas fa-chart-bar"></i> Ver Informes</a>
+        </div>
+        <a href="/logout" class="btn btn-outline-secondary mb-2"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+    </div>
+
+    <div class="table-responsive">
+        <table id="tabla-turnos" class="table table-bordered table-hover">
             <thead class="thead-dark">
                 <tr>
                     <th>Fecha</th>
@@ -69,8 +100,12 @@
                     <td>{{ turno['observaciones'] }}</td>
                     <td>
                         <div class="d-flex flex-column">
-                            <a href="{{ url_for('editar_turno', id=turno['id']) }}" class="btn btn-warning btn-sm mb-1">Editar</a>
-                            <a href="{{ url_for('eliminar_turno', id=turno['id']) }}" class="btn btn-danger btn-sm">Eliminar</a>
+                            <a href="{{ url_for('editar_turno', id=turno['id']) }}" class="btn btn-warning btn-sm mb-1">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                            <a href="{{ url_for('eliminar_turno', id=turno['id']) }}" class="btn btn-danger btn-sm">
+                                <i class="fas fa-trash-alt"></i> Eliminar
+                            </a>
                         </div>
                     </td>
                 </tr>
@@ -78,12 +113,39 @@
             </tbody>
         </table>
     </div>
+</div>
 
-    <script>
+<!-- SCRIPTS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
+<script src="https://cdn.datatables.net/fixedheader/3.4.0/js/dataTables.fixedHeader.min.js"></script>
+<script>
+    $(document).ready(function () {
+        let table = $('#tabla-turnos').DataTable({
+            fixedHeader: true,
+            pageLength: 10,
+            language: {
+                search: "Buscar:",
+                lengthMenu: "Mostrar _MENU_ registros",
+                info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+                paginate: {
+                    next: "Siguiente",
+                    previous: "Anterior"
+                },
+                zeroRecords: "No se encontraron turnos",
+                infoEmpty: "Mostrando 0 a 0 de 0 registros",
+                infoFiltered: "(filtrado de _MAX_ registros totales)"
+            }
+        });
+
         setTimeout(function () {
             let msg = document.getElementById('mensaje');
             if (msg) msg.style.display = 'none';
         }, 4000);
-    </script>
+    });
+</script>
+
 </body>
 </html>

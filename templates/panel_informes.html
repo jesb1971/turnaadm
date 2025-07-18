@@ -4,13 +4,30 @@
     <meta charset="UTF-8">
     <title>Panel de Informes</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
-            padding: 20px;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        header {
+            background-color: #155195;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+        }
+        header img {
+            height: 40px;
+            margin-right: 15px;
         }
         h1 {
-            margin-bottom: 20px;
+            margin: 0;
+            font-size: 1.6rem;
+        }
+        .container {
+            padding: 20px;
         }
         .form-inline .form-group {
             margin-right: 15px;
@@ -18,40 +35,66 @@
         .btn {
             margin-top: 5px;
         }
+        table {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+        thead.thead-dark th {
+            background-color: #343a40;
+            color: white;
+            vertical-align: middle;
+        }
+        td, th {
+            vertical-align: middle !important;
+            text-align: center;
+        }
+        tbody tr:hover {
+            background-color: #e9ecef;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Panel de Informes</h1>
-        {% if mensaje %}
-            <div class="alert alert-info">{{ mensaje }}</div>
-        {% endif %}
 
-        <form class="form-inline mb-3" method="get" action="/panel_informes">
-            <div class="form-group">
-                <label for="fecha_inicio">Desde:</label>
-                <input type="date" class="form-control ml-2" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio or '' }}">
-            </div>
-            <div class="form-group">
-                <label for="fecha_fin" class="ml-3">Hasta:</label>
-                <input type="date" class="form-control ml-2" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin or '' }}">
-            </div>
-            <div class="form-group">
-                <label for="centro" class="ml-3">Centro:</label>
-                <select class="form-control ml-2" id="centro" name="centro">
-                    <option value="">Todos</option>
-                    <option value="Alvarez" {% if centro_filtro == 'Alvarez' %}selected{% endif %}>Alvarez de Lugo</option>
-                    <option value="Duggi" {% if centro_filtro == 'Duggi' %}selected{% endif %}>Duggi</option>
-                    <option value="Ingenieros" {% if centro_filtro == 'Ingenieros' %}selected{% endif %}>Ingenieros</option>
-                </select>
-            </div>
-            <button type="submit" class="btn btn-primary ml-3">Filtrar</button>
-        </form>
+<header>
+    <img src="{{ url_for('static', filename='Logo_turnaam.jpeg') }}" alt="Logo ServiTurn">
+    <h1>Panel de Informes</h1>
+</header>
 
-        <a href="/exportar_excel?fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}&centro={{ centro_filtro }}" class="btn btn-success mb-3">Exportar a Excel</a>
-        <a href="/panel_turnos" class="btn btn-outline-secondary mb-3">Volver al Panel</a>
+<div class="container">
+    {% if mensaje %}
+        <div class="alert alert-info">{{ mensaje }}</div>
+    {% endif %}
 
-        <table class="table table-bordered">
+    <form class="form-inline mb-3" method="get" action="/panel_informes">
+        <div class="form-group">
+            <label for="fecha_inicio">Desde:</label>
+            <input type="date" class="form-control ml-2" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio or '' }}">
+        </div>
+        <div class="form-group">
+            <label for="fecha_fin" class="ml-3">Hasta:</label>
+            <input type="date" class="form-control ml-2" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin or '' }}">
+        </div>
+        <div class="form-group">
+            <label for="centro" class="ml-3">Centro:</label>
+            <select class="form-control ml-2" id="centro" name="centro">
+                <option value="">Todos</option>
+                <option value="Alvarez" {% if centro_filtro == 'Alvarez' %}selected{% endif %}>Alvarez de Lugo</option>
+                <option value="Duggi" {% if centro_filtro == 'Duggi' %}selected{% endif %}>Duggi</option>
+                <option value="Ingenieros" {% if centro_filtro == 'Ingenieros' %}selected{% endif %}>Ingenieros</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary ml-3">Filtrar</button>
+    </form>
+
+    <div class="mb-3">
+        <a href="/exportar_excel?fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}&centro={{ centro_filtro }}" class="btn btn-success">Exportar a Excel</a>
+        <a href="/panel_turnos" class="btn btn-outline-secondary ml-2">Volver al Panel</a>
+    </div>
+
+    <div class="table-responsive">
+        <table id="tablaInformes" class="table table-bordered table-hover">
             <thead class="thead-dark">
                 <tr>
                     <th>Empleado</th>
@@ -78,5 +121,22 @@
             </tbody>
         </table>
     </div>
+</div>
+
+<!-- SCRIPTS -->
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#tablaInformes').DataTable({
+            language: {
+                url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+            },
+            pageLength: 10,
+            lengthChange: false
+        });
+    });
+</script>
+
 </body>
 </html>

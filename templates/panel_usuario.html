@@ -2,9 +2,9 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Mis Turnos - TURNAADM</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+    <title>Turnos - TURNAADM</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <style>
         body {
             background-color: #f8f9fa;
@@ -12,8 +12,17 @@
         header {
             background-color: #155195;
             color: white;
-            padding: 20px;
-            text-align: center;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+        }
+        header img {
+            height: 50px;
+            margin-right: 15px;
+        }
+        header h2 {
+            margin: 0;
+            font-size: 1.4rem;
         }
         .logout {
             text-align: center;
@@ -42,30 +51,34 @@
             border-radius: 10px;
             overflow: hidden;
         }
+        h4 {
+            margin-top: 40px;
+        }
     </style>
 </head>
 <body>
 
 <header>
+    <img src="{{ url_for('static', filename='Logo_turnaam.jpeg') }}" alt="Logo ServiTurn">
     <h2>Bienvenido/a, {{ empleado }}</h2>
 </header>
 
 <div class="container mt-4">
 
-    <!-- CALENDARIO -->
+    <!-- CALENDARIO CON TURNOS PROPIOS -->
     <div id="calendar"></div>
 
     <!-- BOTÓN EXPORTAR -->
     <div class="mb-3 text-end">
-        <a href="{{ url_for('exportar_turnos') }}" class="btn btn-success">Exportar a Excel</a>
+        <a href="{{ url_for('exportar_turnos') }}" class="btn btn-success">Exportar mis turnos a Excel</a>
     </div>
 
-    <!-- TABLA DE TURNOS -->
-    <h4 class="mb-3">Turnos detallados</h4>
-    {% if turnos %}
+    <!-- MIS TURNOS -->
+    <h4 class="mb-3">Mis turnos</h4>
+    {% if turnos_propios %}
     <div class="table-responsive">
-        <table class="table table-bordered">
-            <thead class="table-light">
+        <table id="tablaPropios" class="table table-bordered table-hover">
+            <thead class="thead-dark">
                 <tr>
                     <th>Fecha</th>
                     <th>Centro</th>
@@ -76,7 +89,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for t in turnos %}
+                {% for t in turnos_propios %}
                 <tr class="{% if t['centro'] == 'ALVAREZ DE LUGO' %}alvarez{% elif t['centro'] == 'DUGGI' %}duggi{% elif t['centro'] == 'INGENIEROS' %}ingenieros{% endif %}">
                     <td>{{ t['fecha'] }}</td>
                     <td>{{ t['centro'] }}</td>
@@ -92,6 +105,41 @@
     {% else %}
         <p>No tienes turnos asignados.</p>
     {% endif %}
+
+    <!-- TURNOS DE COMPAÑEROS -->
+    <h4 class="mb-3">Turnos de compañeros</h4>
+    {% if turnos_companeros %}
+    <div class="table-responsive">
+        <table id="tablaCompaneros" class="table table-bordered table-hover">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Empleado</th>
+                    <th>Fecha</th>
+                    <th>Centro</th>
+                    <th>Turno</th>
+                    <th>Hora Entrada</th>
+                    <th>Hora Salida</th>
+                    <th>Observaciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in turnos_companeros %}
+                <tr class="{% if t['centro'] == 'ALVAREZ DE LUGO' %}alvarez{% elif t['centro'] == 'DUGGI' %}duggi{% elif t['centro'] == 'INGENIEROS' %}ingenieros{% endif %}">
+                    <td>{{ t['empleado'] }}</td>
+                    <td>{{ t['fecha'] }}</td>
+                    <td>{{ t['centro'] }}</td>
+                    <td>{{ t['turno'] }}</td>
+                    <td>{{ t['hora_entrada'] }}</td>
+                    <td>{{ t['hora_salida'] }}</td>
+                    <td>{{ t['observaciones'] or '' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p>No hay turnos de compañeros disponibles.</p>
+    {% endif %}
 </div>
 
 <!-- CIERRE DE SESIÓN -->
@@ -100,8 +148,20 @@
 </div>
 
 <!-- SCRIPTS -->
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 <script>
+    $(document).ready(function () {
+        $('#tablaPropios, #tablaCompaneros').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+            },
+            pageLength: 10,
+            lengthChange: false
+        });
+    });
+
     document.addEventListener('DOMContentLoaded', function () {
         const calendarEl = document.getElementById('calendar');
         const calendar = new FullCalendar.Calendar(calendarEl, {
@@ -112,8 +172,13 @@
                 center: 'title',
                 right: 'dayGridMonth,timeGridWeek'
             },
+            buttonText: {
+                today: 'Hoy',
+                month: 'Mes',
+                week: 'Semana'
+            },
             events: [
-                {% for t in turnos %}
+                {% for t in turnos_propios %}
                 {
                     title: "{{ t['turno'] }} - {{ t['centro'] }}",
                     start: "{{ t['fecha'] }}",

@@ -19,10 +19,15 @@
             box-shadow: 0 0 15px rgba(0,0,0,0.1);
             width: 100%;
             max-width: 400px;
+            text-align: center;
+        }
+        img {
+            height: 100px;
+            margin-bottom: 15px;
         }
         h2 {
-            text-align: center;
             color: #333;
+            margin-bottom: 20px;
         }
         input[type="text"] {
             width: 100%;
@@ -50,10 +55,16 @@
 </head>
 <body>
     <div class="login-container">
+
+        <!-- LOGO -->
+        <img src="{{ url_for('static', filename='Logo_turnaam.jpeg') }}" alt="Logo TurnaADM">
+
         <h2>Acceso de Usuario</h2>
+
         {% if error %}
             <div class="error">{{ error }}</div>
         {% endif %}
+
         <form method="POST" action="/login_usuario">
             <label for="dni">Introduce tu DNI:</label>
             <input type="text" name="dni" id="dni" placeholder="Ej: 43616041" required>
